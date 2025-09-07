@@ -1,34 +1,57 @@
 # Secure E-Commerce Web Application
 
+This repository contains a secure e-commerce web application built with the MERN stack, Auth0 authentication, and modern security best practices.
+
 ## Project Overview
 
-This project is a secure e-commerce web application emphasizing authentication, authorization, and mitigation of OWASP Top 10 vulnerabilities. It consists of a React frontend (Vite) and an Express backend with MongoDB.
+The application allows authenticated users to:
 
-### Features
+* Securely login and logout via Auth0.
+* View their profile including name, email, and profile picture.
+* Browse products stored in MongoDB.
+* Add products to a cart.
+* Place orders with details such as purchase date, delivery time slot, address, product name and quantity, and a custom message.
+* View past and upcoming orders tied to their account.
 
-* User registration and login using Auth0 (OIDC)
-* View and edit profile information
-* Add products to cart and place orders
-* View all past and upcoming orders
-* Role-based authorization (user/admin)
+All API requests are protected using JWT access tokens issued by Auth0.
 
 ## Technology Stack
 
-* **Frontend:** React with Vite, HTTPS dev server
-* **Backend:** Express.js, HTTPS server, JWT middleware, Auth0 integration
-* **Database:** MongoDB with Mongoose
-* **Authentication:** Auth0 (OpenID Connect)
-* **Security:** HTTPS, token-based authentication, input validation, OWASP Top 10 mitigations
+* **Frontend:** React with Vite
+* **Backend:** Express.js with Node.js
+* **Database:** MongoDB (Mongoose ORM)
+* **Authentication & Authorization:** Auth0 (OIDC & JWTs)
+* **Media Storage:** Cloudinary for product images
 
-## Project Setup
+## Security Measures
 
-### Backend Setup (Express + HTTPS)
+1. **Authentication & Authorization**
 
-1. Clone the repository:
+   * OIDC via Auth0 for login/logout.
+   * Express middleware (`express-jwt`) verifies JWT tokens.
+   * Endpoints validate `req.user` to ensure users access only their own data.
+
+2. **HTTPS & Secure Config**
+
+   * Environment variables store Auth0, MongoDB, and Cloudinary credentials.
+   * Secrets are excluded from version control.
+   * Frontend communicates securely with backend via HTTPS.
+
+3. **OWASP Top 10 Mitigation**
+
+   * **Injection:** Mongoose with query parameter binding.
+   * **Broken Authentication:** Auth0 handles login; no custom password storage.
+   * **Sensitive Data Exposure:** HTTPS and `.env` for secrets.
+   * **Broken Access Control:** Endpoints validate `req.user.sub`.
+   * **XSS:** React escapes inputs; backend sanitizes messages.
+   * **CSRF Protection:** Stateless APIs using Bearer tokens.
+
+## Backend Setup (Express.js + MongoDB)
+
+1. Navigate to the backend directory:
 
 ```bash
-git clone https://github.com/lakshitha779988/Secure-E-Commerce-Web-Application.git
-cd Secure-E-Commerce-Web-Application/backend
+cd backend
 ```
 
 2. Install dependencies:
@@ -37,130 +60,79 @@ cd Secure-E-Commerce-Web-Application/backend
 npm install
 ```
 
-3. Generate SSL certificates (self-signed for local development):
-
-```bash
-mkdir ssl
-cd ssl
-openssl genrsa -out key.pem 2048
-openssl req -new -key key.pem -out csr.pem
-openssl x509 -req -days 365 -in csr.pem -signkey key.pem -out cert.pem
-```
-
-4. Configure environment variables in `.env` (MongoDB URI, Auth0 keys, etc.)
-
-5. Start the backend server on HTTPS:
-
-```bash
-node server.js
-```
-
-Backend URL: `https://localhost:8443`
-
----
-
-### Frontend Setup (React + Vite + HTTPS)
-
-1. Navigate to frontend folder:
-
-```bash
-cd ../frontend
-```
-
-2. Install dependencies:
-
-```bash
-npm install
-```
-
-3. Generate local HTTPS certificates (using mkcert recommended):
-
-```bash
-mkcert localhost
-# Generates localhost.pem and localhost-key.pem
-```
-
-4. Update `vite.config.js` with SSL paths:
-
-```javascript
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import fs from 'fs';
-
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    https: {
-      key: fs.readFileSync('./ssl/localhost-key.pem'),
-      cert: fs.readFileSync('./ssl/localhost.pem'),
-    },
-    port: 5173
-  }
-});
-```
-
-5. Add `.env` file:
-
-```env
-VITE_API_BASE_URL=https://localhost:8443
-```
-
-6. Start React dev server:
+3. Run the server:
 
 ```bash
 npm run dev
 ```
 
-Frontend URL: `https://localhost:5173`
+Server runs on `http://localhost:5000/`
 
----
+### Backend Features
 
-### Running the Project
+* REST APIs for products, cart, and orders.
+* Middleware (`checkJwt`, `attachUser`) for authentication.
+* Mongoose schemas with validation.
+* Cloudinary integration for secure product images.
 
-1. Backend: `https://localhost:8443`
-2. Frontend: `https://localhost:5173`
-3. Ensure environment variables are correctly configured for Auth0, MongoDB, and SSL paths.
-4. Access the app via browser and register/login using Auth0.
+## Frontend Setup (React + Vite)
 
-### Security Measures Implemented
+1. Navigate to the frontend directory:
 
-* HTTPS enforced for all communication
-* JWT token verification with Auth0
-* Role-based access control
-* Input validation on frontend and backend
-* OWASP Top 10 mitigations: Injection, Broken Authentication, Sensitive Data Exposure, Broken Access Control, XSS, CSRF protection
-
-### Folder Structure
-
-```
-backend/
- ├─ ssl/
- ├─ routes/
- ├─ models/
- ├─ middleware/
- ├─ server.js
-frontend/
- ├─ ssl/
- ├─ src/
- │   ├─ auth/
- │   ├─ hooks/
- │   ├─ pages/
- │   └─ components/
- ├─ vite.config.js
- └─ package.json
+```bash
+cd frontend
 ```
 
-### GitHub Repository
+2. Install dependencies:
 
-[Secure E-Commerce Web Application](https://github.com/lakshitha779988/Secure-E-Commerce-Web-Application)
+```bash
+npm install
+```
 
-### Conclusion
+3. Run the frontend:
 
-This project demonstrates secure web application development, including:
+```bash
+npm run dev
+```
 
-* OIDC login and Auth0 integration
-* Role-based access control
-* HTTPS communication for frontend and backend
-* Mitigation of OWASP Top 10 vulnerabilities
+Frontend runs on `http://localhost:5173/`
 
-It provides a full-stack solution with React, Express, and MongoDB, suitable for learning and further development.
+### Frontend Features
+
+* React Router for page navigation.
+* Auth0 authentication with `@auth0/auth0-react` and custom `Auth0ProviderWithHistory`.
+* API requests include Bearer tokens.
+* Form validation for dates, time slots, and quantities.
+
+## Database (MongoDB)
+
+* Collections: `users`, `products`, `orders`, `carts`.
+* Unique email index enforced on `users`.
+* Proper schema design linking users to their orders.
+
+## Environment Variables (.env)
+
+Create a `.env` file in the root directory with the following:
+
+```env
+AUTH0_DOMAIN=your-tenant.us.auth0.com
+AUTH0_CLIENT_ID=your-client-id
+AUTH0_AUDIENCE=http://localhost:5000/api
+MONGODB_URI=mongodb://localhost:27017/icecream_store_db
+CLOUDINARY_URL=cloudinary://your-api-key:secret@cloud-name
+```
+
+
+
+## Running the Project
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/lakshitha779988/Secure-E-Commerce-Web-Application
+```
+
+2. Configure `.env` with your credentials.
+3. Start backend and frontend servers as described above.
+
+
